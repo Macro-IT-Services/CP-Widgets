@@ -1,0 +1,31 @@
+export const mediaClient = {
+  upload(mediaId, file) {
+    const formData = new FormData();
+    formData.append('uploaded_file', file);
+    return axios.request({
+      method: 'POST',
+      url: `${
+        window.__pixelConfig.APP_MEDIA_SERVER
+      }/upload/${mediaId}/${getAuthToken()}`,
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      // onUploadProgress: function(progressEvent) {
+      //   let percentCompleted = Math.round(
+      //     (progressEvent.loaded * 100) / progressEvent.total
+      //   );
+      //   // console.log(percentCompleted);
+      // },
+      data: formData
+    });
+  },
+
+  getImageUrl(mediaId) {
+    return mediaId
+      ? `${
+          window.__pixelConfig.APP_MEDIA_SERVER
+        }/download/${mediaId}/${getAuthToken()}`
+      : '';
+  }
+};
+

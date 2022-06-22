@@ -1,0 +1,173 @@
+
+
+Терминология:
+
+меню - выезжающее меню
+
+сайдбар - вертикальная часть экрана слева (на мобильном может занимать весь экран), в которой может выводиться либо список (компонент SideList) либо карточка объекта (компонент SideCard). В SideCard выводятся объекты типов: group, widget.
+
+дашборд - выводимая в правой части экрана (на мобильном может занимать весь экран) панель, содержащая контейнеры (groups) с виджетами. Может находиться либо в режиме просмотра либо редактирования (isEditMode)
+
+группа (тоже самое, что контейнер) - объединяет виджеты (как в базе/объектах, так и визуально)
+
+
+...
+
+Роутинг выглядит как https://site/:dashboard_id/:group_id/:widget_id/:object_id где object_id - объект, привязанный к виджету (devices, datasets).
+Группа либо виджет, соответствующий текущему path, показывается в сайдбаре и выделяется на дашборде рамкой.
+
+
+...
+
+В режиме редактирования на виджет накладывается компонент WidgetEditControls с соответствующими кнопками.  
+.....
+
+Состояние контейнеров и виджетов определяется содержимым dashboard и layouts. Разделение обусловлено особенностями используемой библиотеки react-grid-layout (в layout нельзя хранить custom properties).
+Связь между dashboard и layouts осуществляется через layouts[].i = dashboard...group.id
+
+dashboard (redux state) - заполняется по запросу WIDGETS_QUERY из базы. Представляет собой массив контейнеров (групп), содержащих массив виджетов. Добавление виджетов происходит в массив dashboard[].widgets
+
+{
+  dashboard: [
+    {
+      id: '7b7e0a6f-30ba-4f37-8f61-a568be7d2c59',
+      name: 'c1',
+      enabled: true,
+      width: '3',
+      widgets: [],
+      order: [],
+      layouts: { ... }
+    },
+    {
+      id: 'eb9e0228-9ead-450e-999d-4f1b270afea8',
+      name: 'c2',
+      enabled: true,
+      width: '3',
+      order: [
+        'e48f78f3-36d1-493e-a23d-97740d9cd47a',
+        '280ed2ac-0321-458d-947a-a6404275bac5',
+        '2b46ec73-00ae-4faa-8a27-fd2af50a4233'
+      ],
+      widgets: [
+        {
+          widget: 'Counter',
+          size: 'small',
+          mode: 'icon_text',
+          id: '280ed2ac-0321-458d-947a-a6404275bac5',
+          wide: false,
+          colors: [
+            'lightOnDark'
+          ],
+          simulation: false,
+          value: '0'
+        },
+        {
+          widget: 'Indicator',
+          size: 'small',
+          mode: 'icon_text',
+          id: 'e48f78f3-36d1-493e-a23d-97740d9cd47a',
+          wide: false,
+          simulation: false,
+          colors: [
+            'lightOnDark'
+          ],
+          value: '0'
+        },
+        {
+          widget: 'ImageBox',
+          size: 'small',
+          mode: 'icon_text',
+          id: '2b46ec73-00ae-4faa-8a27-fd2af50a4233',
+          wide: false,
+          colors: [
+            'lightOnDark'
+          ],
+          value: '0'
+        }
+      ],
+      layouts: { ... }
+    }
+  ],
+
+
+
+updatedLayouts (local state) - основной source of truth. Сюда записывается layout, сформированный из данных dashboard полученных через WIDGETS_QUERY.  По onLayoutChange (перемещение любого контейнера) он обновляется и сохраняется раздельно для каждого контейнера в property Layouts соответствующей group вызовом UPDATE_GROUPS_LAYOUTS_MUTATION (в виде json)
+
+finalLayouts (простая переменная) - конечный готовый объект для передачи в RGL. Отличается от updatedLayouts тем, что в нём заменены высоты на полученные из heights. Больше ни для чего кроме передачи в RGL этот finalLayouts не используется.
+
+Форматы updatedLayouts и finalLayouts идентичны, там хранятся данные о размерах и положении каждого контейнера для каждой стандартной ширины экрана - ["lg","md","sm","xs","xxs"]. x,y,w,h - в единицах сетки (по вертикали единицы соответствуют пикселам). minH, maxH вроде не используются. i - идентификатор. Должен соответствовать атрибуту key внешнего div контейнера.
+
+Начальное значение (без контейнеров)
+
+{ lg: [], md: [], sm: [], xs: [], xxs: [] }
+
+Пример рабочего значения (уже с контейнерами):
+
+ {
+        lg: [
+          {
+            x: 0,
+            y: 0,
+            w: 3,
+            h: 56,
+            minH: 56,
+            maxH: 56,
+            i: '7b7e0a6f-30ba-4f37-8f61-a568be7d2c59'
+          }
+        ],
+        md: [
+          {
+            x: 0,
+            y: 0,
+            w: 3,
+            h: 56,
+            minH: 56,
+            maxH: 56,
+            i: '7b7e0a6f-30ba-4f37-8f61-a568be7d2c59'
+          }
+        ],
+        sm: [
+          {
+            x: 0,
+            y: 0,
+            w: 3,
+            h: 56,
+            minH: 56,
+            maxH: 56,
+            i: '7b7e0a6f-30ba-4f37-8f61-a568be7d2c59'
+          }
+        ],
+        xs: [
+          {
+            w: 3,
+            h: 56,
+            x: 1,
+            y: 160,
+            i: '7b7e0a6f-30ba-4f37-8f61-a568be7d2c59',
+            minH: 56,
+            maxH: 56,
+            moved: false,
+            'static': false
+          }
+        ],
+        xxs: [
+          {
+            x: 0,
+            y: 104,
+            w: 3,
+            h: 56,
+            minH: 56,
+            maxH: 56,
+            i: '7b7e0a6f-30ba-4f37-8f61-a568be7d2c59'
+          }
+        ]
+      }
+    }
+    
+
+
+
+
+
+
+

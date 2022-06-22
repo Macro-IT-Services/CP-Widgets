@@ -1,0 +1,52 @@
+@font-face {
+  font-family: Roboto-Bold;
+  src: local('Roboto-Bold'), url('fonts/Roboto-Bold.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: Roboto-Black;
+  src: local('Roboto-Black'), url('fonts/Roboto-Black.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: Roboto-Light;
+  src: local('Roboto-Light'), url('fonts/Roboto-Light.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: Roboto-Medium;
+  src: local('Roboto-Medium'), url('fonts/Roboto-Medium.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: Roboto-Regular;
+  src: local('Roboto-Regular'), url('fonts/Roboto-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: Roboto-Thin;
+  src: local('Roboto-Thin'), url('fonts/Roboto-Thin.ttf') format('truetype');
+}
+
+
+:root {
+  --svgcolor: tomato;
+}
+
+/* debug */
+
+.item {
+  display: contents;
+  border: 1px solid yellow;
+
+}
+.item > div {
+ margin:2px;
+}
+
+.item:nth-child(3n)::after {
+  content: '';
+  width: 100%;
+}
+
+
